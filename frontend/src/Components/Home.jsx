@@ -1,16 +1,16 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from "react";
 import SignUp from "./Authentication/Signup";
 import SignIn from "./Authentication/Signin";
 
 const Home = () => {
-  const[signup, setSignup] = useState(false)
+  const [signup, setSignup] = useState(false);
+
   return (
-    <div data-theme="lofi" className="min-h-screen flex flex-col justify-center items-center">
-      <div className="bg-transparent shadow-lg rounded-lg p-8 w-full max-w-md">
-        <h2 className="text-3xl font-bold text-center text-lime-400 mb-6">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-50 to-purple-50">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-lg">
+        <h1 className="text-3xl font-bold text-center text-gray-800">
           {signup ? "Sign Up" : "Sign In"}
-        </h2>
+        </h1>
         <div className="flex justify-center mb-4">
           <label className="flex items-center space-x-2 text-gray-600">
             <input
@@ -19,8 +19,8 @@ const Home = () => {
               className="form-checkbox h-5 w-5 text-indigo-600"
               onChange={() => setSignup(!signup)}
             />
-            <span className="text-sm text-indigo-200">
-              {signup ? null : "Don't have an account?"}
+            <span className="text-sm text-gray-700">
+              {signup ? "Already have an account?" : "Don't have an account?"}
             </span>
           </label>
         </div>

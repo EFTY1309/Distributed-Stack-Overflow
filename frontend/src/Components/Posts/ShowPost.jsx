@@ -14,46 +14,54 @@ const ShowPost = () => {
   const location = useLocation();
   const { id, flag } = location.state;
 
+  // Function to fetch posts
+  const fetchPosts = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get("http://localhost:5002/post", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Fetch user info for each post
+      const postsWithUsernames = await Promise.all(
+        response.data.map(async (post) => {
+          try {
+            const userResponse = await axios.get(
+              `http://localhost:5001/auth/${post.user._id}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+            // Attach the username to the post
+            post.username = userResponse.data.username; // Assuming 'username' is part of the response
+            return post;
+          } catch (error) {
+            console.error("Error fetching user data", error);
+            post.username = "Unknown User";
+            return post;
+          }
+        })
+      );
+
+      setPosts(postsWithUsernames);
+      console.log(postsWithUsernames);
+    } catch (error) {
+      console.error("Error fetching posts", error);
+    }
+  };
+
+  // Fetch posts on component mount
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:5002/post", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        // Fetch user info for each post
-        const postsWithUsernames = await Promise.all(
-          response.data.map(async (post) => {
-            try {
-              const userResponse = await axios.get(
-                `http://localhost:5001/auth/${post.user._id}`,
-                {
-                  headers: { Authorization: `Bearer ${token}` },
-                }
-              );
-              // Attach the username to the post
-              post.username = userResponse.data.username; // Assuming 'username' is part of the response
-              return post;
-            } catch (error) {
-              console.error("Error fetching user data", error);
-              post.username = "Unknown User";
-              return post;
-            }
-          })
-        );
-
-        setPosts(postsWithUsernames);
-        console.log(postsWithUsernames);
-      } catch (error) {
-        console.error("Error fetching posts", error);
-      }
-    };
-
     fetchPosts();
   }, []);
+
+  // Callback function to refresh posts after a new post is created
+  const handlePostCreated = () => {
+    fetchPosts(); // Re-fetch posts
+    setShowCreatePost(false); // Close the CreatePost form
+  };
 
   const handleCreatePost = () => {
     setShowCreatePost(!showCreatePost);
@@ -72,7 +80,7 @@ const ShowPost = () => {
           </button>
           <Alert id={id} flag={flag} />
         </div>
-        {showCreatePost && <CreatePost userId={id} />}
+        {showCreatePost && <CreatePost userId={id} onPostCreated={handlePostCreated} />}
         {[...posts].reverse().map((post) => (
           <div
             key={post._id}
