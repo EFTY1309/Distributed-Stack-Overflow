@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  auth:
+    build: ./authentication-service
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - MONGO_URI=mongodb://mongo_auth:27017/auth-db
+      - JWT_SECRET=efty123
+    depends_on:
+      - mongo_auth
+
+  post:
+    build: ./post-service
+    ports:
+      - "5002:5002"
+    environment:
+      - PORT=5002
+      - MONGO_URI=mongodb://mongo_post:27017/post-db
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_BUCKET=code-storage
+    depends_on:
+      - mongo_post
+      - minio
+      - notification
+      - auth
+
+  notification:
+    build: ./notification-service
+    ports:
+      - "5003:5003"
+    environment:
+      - PORT=5003
+      - MONGO_URI=mongodb://mongo_notification:27017/notification-db
+    depends_on:
+      - mongo_notification
+      - auth
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - auth
+      - post
+      - notification
+      - minio
+
+  mongo_auth:
+    image: mongo:4.4
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data-auth:/data/db
+
+  mongo_post:
+    image: mongo:4.4
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-data-post:/data/db
+
+  mongo_notification:
+    image: mongo:4.4
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongo-data-notification:/data/db
+
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - ./minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mongo-data-auth:
+  mongo-data-post:
+  mongo-data-notification:
+  minio-data:
