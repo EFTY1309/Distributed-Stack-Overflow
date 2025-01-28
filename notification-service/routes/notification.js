@@ -7,7 +7,7 @@ const router = express.Router();
 // Helper function to fetch user data         
 const fetchUserData = async (userId) => {
   try { 
-    const response = await axios.get(`http://localhost:5001/auth/${userId}`);
+    const response = await axios.get(`http://auth:5001/auth/${userId}`);
     return response.data; // Return user data from the API
   } catch (error) { 
     console.error(`Failed to fetch user data for ID: ${userId}`, error); 

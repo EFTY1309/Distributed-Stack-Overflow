@@ -72,7 +72,7 @@ router.post("/", upload.single('file'), async (req, res) => {
       };
 
       try {
-          await axios.post('http://localhost:5003/notification', notificationData);
+          await axios.post('http://notification:5003/notification', notificationData);
           console.log('Notification sent successfully');
       } catch (error) {
           console.error('Failed to send notification:', error);

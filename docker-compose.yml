@@ -56,6 +56,18 @@ services:
       - notification
       - minio
 
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - auth
+      - post
+      - notification
+
   mongo_auth:
     image: mongo:4.4
     ports:
